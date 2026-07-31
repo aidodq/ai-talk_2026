@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Upload ảnh check-in | AI &amp; Software Engineering — SaveMoney × Duyên Quơ</title>
+<meta name="description" content="Tải ảnh check-in, căn khuôn mặt vào khung tròn và lưu thông tin khách mời cho buổi talkshow AI &amp; Software Engineering tại Duyên Quơ.">
+<meta name="theme-color" content="#0B1B27">
+<meta name="robots" content="noindex">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230B1B27'/%3E%3Ctext x='32' y='43' font-family='Georgia,serif' font-size='30' font-weight='700' fill='%2348CFEB' text-anchor='middle'%3EAI%3C/text%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/studio.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Bỏ qua điều hướng, tới nội dung chính</a>
+
+<header class="studio-bar no-print">
+  <a class="studio-bar__brand" href="index.html">
+    SAVE<span class="studio-bar__accent">MONEY</span>
+    <span class="studio-bar__rule" aria-hidden="true"></span>
+    <span class="studio-bar__venue">DUYÊN QUƠ</span>
+  </a>
+  <nav class="studio-bar__nav" aria-label="Công cụ sự kiện">
+    <a href="index.html">Trang sự kiện</a>
+    <a href="checkin.html" aria-current="page">Upload ảnh</a>
+    <a href="nametag.html">Name Tag Studio</a>
+  </nav>
+</header>
+
+<main class="page" id="main">
+
+  <div class="page-head">
+    <div class="page-head__text">
+      <p class="eyebrow">Bước 1 · Ảnh check-in</p>
+      <h1 class="page-title">Tải ảnh &amp; căn khuôn mặt vào khung tròn</h1>
+      <p class="page-lede">Chọn ảnh chân dung từ máy hoặc kéo thả vào ô bên dưới, chỉnh zoom và vị trí cho tới khi khuôn mặt nằm gọn trong khung tròn. Lưu lại để sang <a href="nametag.html">Name Tag Studio</a> in thẻ, hoặc tải ảnh tròn PNG về dùng làm avatar.</p>
+    </div>
+    <div class="row">
+      <a class="btn btn--ink" href="nametag.html">Sang bước 2 · Tạo name tag</a>
+    </div>
+  </div>
+
+  <div class="workbench">
+    <div class="workbench__controls">
+
+      <!-- ── 1. Ảnh ─────────────────────────────────────── -->
+      <section class="panel" aria-labelledby="p-photo">
+        <h2 class="panel__title" id="p-photo">1 · Ảnh check-in</h2>
+
+        <div class="dropzone" id="dropzone">
+          <div class="row">
+            <label class="file-btn">Chọn ảnh từ máy
+              <input type="file" accept="image/*" id="photo-input">
+            </label>
+            <button class="btn btn--link" type="button" id="photo-clear" hidden>Gỡ ảnh</button>
+          </div>
+          <p class="note" id="photo-label">Chưa có ảnh — kéo thả ảnh vào đây cũng được. Thẻ vẫn in được để dán ảnh sau.</p>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="zoom">Zoom khuôn mặt · <span id="zoom-label">430%</span></label>
+          <input class="slider" type="range" id="zoom" min="100" max="600" step="10" value="430">
+        </div>
+
+        <div class="field-grid">
+          <div class="field">
+            <label class="field__label" for="posx">Lệch ngang · <span id="posx-label">63%</span></label>
+            <input class="slider" type="range" id="posx" min="0" max="100" step="1" value="63">
+          </div>
+          <div class="field">
+            <label class="field__label" for="posy">Lệch dọc · <span id="posy-label">20%</span></label>
+            <input class="slider" type="range" id="posy" min="0" max="100" step="1" value="20">
+          </div>
+        </div>
+
+        <div class="row">
+          <button class="btn btn--ghost" type="button" id="photo-reset">Đặt lại khung ảnh</button>
+          <button class="btn btn--teal" type="button" id="photo-download" disabled>Tải ảnh tròn PNG</button>
+        </div>
+      </section>
+
+      <!-- ── 2. Thông tin ───────────────────────────────── -->
+      <section class="panel" aria-labelledby="p-info">
+        <h2 class="panel__title" id="p-info">2 · Thông tin khách</h2>
+
+        <div class="field">
+          <label class="field__label" for="name">Facebook Name</label>
+          <input class="field__input" type="text" id="name" placeholder="Nguyễn Văn A" autocomplete="name" maxlength="40">
+        </div>
+
+        <div class="field">
+          <span class="field__label" id="skill-label">Skill chính <span class="field__hint">— chọn nhiều được, in ra cách nhau bằng “|”</span></span>
+          <div class="chips" id="skill-chips" role="group" aria-labelledby="skill-label"></div>
+          <input class="field__input" type="text" id="skill" placeholder="AI | Backend | Frontend…" maxlength="60">
+        </div>
+
+        <div class="row">
+          <button class="btn btn--amber" type="button" id="save-guest">Lưu vào danh sách khách</button>
+          <button class="btn btn--ghost" type="button" id="reset-form">Xoá form</button>
+        </div>
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+      </section>
+
+      <!-- ── 3. Danh sách ───────────────────────────────── -->
+      <section class="panel" aria-labelledby="p-list">
+        <div class="panel__head">
+          <h2 class="panel__title" id="p-list">3 · Đã lưu (<span id="guest-count">0</span>)</h2>
+          <button class="btn btn--link" type="button" id="clear-guests">Xoá hết</button>
+        </div>
+        <p class="panel__hint" id="list-hint"></p>
+        <ul class="queue" id="guest-list"></ul>
+      </section>
+    </div>
+
+    <div class="workbench__preview">
+      <p class="preview-label">Xem trước · 92 × 136 mm</p>
+      <div id="preview"></div>
+    </div>
+  </div>
+</main>
+
+<script src="assets/js/tag-card.js"></script>
+<script src="assets/js/checkin.js"></script>
+</body>
+</html>

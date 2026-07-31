@@ -25,6 +25,22 @@ tới `https://q.me-qr.com/uh4dqj80` → Google Form đăng ký.
 `speaker-aido.jpg` đã cắt bỏ dải chữ viết tay "AIDo" ở đáy tranh cho vừa khung
 4:5 — tên diễn giả đã hiển thị bằng chữ lớn ngay bên cạnh nên không cần lặp.
 
+## Còn thiếu: `qr-fanpage.png`
+
+Hai trang công cụ (`checkin.html`, `nametag.html`) dựng thẻ tên có ô QR Fanpage
+Duyên Quơ, trỏ tới `assets/img/qr-fanpage.png`. **File này chưa có.** Nguồn là
+`uploads/QR_DuyenQuo.png` trong project Design, nhưng `get_file` trả về base64
+hỏng (IDAT sai CRC, không giải nén được) — xem cách tải bằng endpoint `serve` ở
+mục dưới:
+
+```bash
+curl -o assets/img/qr-fanpage.png "$B/QR_DuyenQuo.png?t=<token>"
+```
+
+Chừng nào chưa có file, thẻ vẫn in bình thường: ô QR hiện khung nét đứt chữ "QR"
+để dán mã bằng tay. Thả đúng file vào là cả hai trang tự hiện QR, không cần sửa
+code.
+
 ## Tải lại ảnh gốc từ project Design
 
 API `get_file` của MCP cắt file ở 256 KiB nên không lấy được ảnh gốc. Dùng

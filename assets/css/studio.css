@@ -1,0 +1,403 @@
+/* ============================================================
+   studio.css — shared shell for the two event sub-pages
+   (checkin.html · nametag.html)
+
+   Tokens mirror assets/css/styles.css so the tools sit inside the
+   same visual system as the landing page. Kept in a separate file
+   because the landing sheet is 860 lines the tools never touch.
+   ============================================================ */
+
+:root{
+  --ink:          #12222F;
+  --navy:         #0B1B27;
+  --navy-mid:     #0E2233;
+  --sand:         #F6F0E6;
+  --clay:         #EDE3D2;
+  --cream:        #FFFCF6;
+
+  --cyan-deep:    #0E6E86;
+  --cyan-dark:    #0B4A5C;
+  --amber:        #F2B24C;
+  --amber-ink:    #231605;
+  --brown:        #7A5A32;
+  --rust:         #8A3A2A;
+
+  --muted:        #5A6B76;
+  --muted-2:      #4A5C68;
+  --line-field:   rgba(18, 34, 47, 0.25);
+
+  --font-display: 'Bricolage Grotesque', 'Segoe UI', sans-serif;
+  --font-body:    'Be Vietnam Pro', 'Segoe UI', sans-serif;
+
+  --radius:       14px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* .btn sets display, which would otherwise beat the UA [hidden] rule and
+   leave JS-hidden buttons on screen. */
+[hidden] { display: none !important; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body{
+  margin: 0;
+  background: var(--clay);
+  font-family: var(--font-body);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--cyan-deep); text-decoration: none; }
+a:hover { color: var(--navy); }
+
+input, select, button, textarea { font-family: inherit; font-size: inherit; color: inherit; }
+
+img { max-width: 100%; }
+
+.skip-link{
+  position: absolute; left: -9999px; top: 0; z-index: 99;
+  background: var(--navy); color: #fff; padding: 12px 18px; border-radius: 0 0 8px 0;
+}
+.skip-link:focus { left: 0; color: #fff; }
+
+:where(a, button, input, select, textarea, label[role="button"]):focus-visible{
+  outline: 3px solid var(--cyan-deep);
+  outline-offset: 2px;
+}
+
+/* ── Page chrome ─────────────────────────────────────────── */
+
+.studio-bar{
+  display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px;
+  padding: 16px 5vw;
+  background: var(--navy);
+  color: rgba(240, 247, 250, 0.86);
+}
+.studio-bar__brand{
+  display: inline-flex; align-items: center; gap: 12px;
+  font-family: var(--font-display); font-weight: 800; letter-spacing: .04em;
+  color: #fff;
+}
+.studio-bar__brand:hover { color: #fff; }
+.studio-bar__accent { color: #48CFEB; }
+.studio-bar__rule { width: 1px; height: 18px; background: rgba(255,255,255,.3); }
+.studio-bar__venue { font-family: var(--font-display); font-weight: 600; font-size: 15px; color: var(--amber); }
+.studio-bar__nav { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+.studio-bar__nav a{
+  padding: 8px 15px; border-radius: 100px; font-size: 14.5px; font-weight: 600;
+  color: rgba(240, 247, 250, 0.86); border: 1px solid rgba(255,255,255,.2);
+}
+.studio-bar__nav a:hover { color: #fff; border-color: rgba(255,255,255,.5); }
+.studio-bar__nav a[aria-current="page"]{
+  background: #fff; color: var(--navy); border-color: #fff;
+}
+
+.page{
+  min-height: 100vh;
+  padding: 40px 5vw 72px;
+  display: flex; flex-direction: column; gap: 32px;
+}
+
+.page-head{
+  display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
+  gap: 24px;
+}
+.page-head__text { display: flex; flex-direction: column; gap: 10px; }
+.eyebrow{
+  font-size: 13px; letter-spacing: .26em; text-transform: uppercase;
+  color: var(--cyan-deep); font-weight: 700;
+}
+.page-title{
+  margin: 0;
+  font-family: var(--font-display); font-weight: 800;
+  font-size: clamp(28px, 4.4vw, 40px); line-height: 1.05;
+}
+.page-lede { margin: 0; font-size: 16px; color: var(--muted-2); max-width: 64ch; }
+
+/* ── Two-column workbench ───────────────────────────────── */
+
+.workbench{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 40px;
+  align-items: start;
+}
+.workbench__controls { display: flex; flex-direction: column; gap: 26px; min-width: 0; }
+.workbench__preview{
+  display: flex; flex-direction: column; gap: 16px; align-items: center;
+  position: sticky; top: 24px;
+}
+.preview-label{
+  font-size: 13px; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--brown); font-weight: 700;
+}
+/* The tag is a fixed 348u box. On phones that is wider than the gutter
+   allows, so the on-screen preview shrinks its unit to fit; print sets
+   its own --u and is unaffected. */
+.workbench__preview .tag { --u: min(1px, calc((100vw - 44px) / 348)); }
+
+@media (max-width: 980px){
+  .workbench { grid-template-columns: minmax(0, 1fr); }
+  .workbench__preview { position: static; order: -1; }
+}
+
+/* ── Panels ─────────────────────────────────────────────── */
+
+.panel{
+  background: var(--sand);
+  border-radius: var(--radius);
+  padding: 30px 28px;
+  display: flex; flex-direction: column; gap: 20px;
+}
+.panel__title{
+  margin: 0;
+  font-family: var(--font-display); font-weight: 700; font-size: 22px;
+}
+.panel__head{
+  display: flex; align-items: baseline; justify-content: space-between; gap: 20px;
+}
+.panel__hint { margin: 0; font-size: 15px; line-height: 1.6; color: var(--muted); }
+
+.field { display: flex; flex-direction: column; gap: 8px; }
+.field__label { font-size: 15px; font-weight: 600; }
+.field__hint { font-weight: 400; color: var(--muted); }
+.field__input{
+  border: 1px solid var(--line-field); border-radius: 8px;
+  padding: 14px 16px; font-size: 17px;
+  background: var(--cream); color: var(--ink);
+}
+.field__input::placeholder { color: rgba(18, 34, 47, .42); }
+
+.field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 560px){ .field-grid { grid-template-columns: 1fr; } }
+
+.slider { width: 100%; accent-color: var(--cyan-deep); }
+
+.row { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+
+.dropzone{
+  display: flex; flex-direction: column; gap: 12px;
+  border: 1.5px dashed var(--line-field); border-radius: 10px;
+  padding: 18px;
+  background: rgba(255, 252, 246, .55);
+  transition: border-color .15s ease, background-color .15s ease;
+}
+.dropzone.is-over { border-color: var(--cyan-deep); background: rgba(14, 110, 134, .1); }
+
+/* ── Buttons ────────────────────────────────────────────── */
+
+/* inline-block, not flex: these labels contain inline <span> counters and a
+   flex gap would open a visible hole mid-sentence. */
+.btn{
+  border: none; border-radius: 8px;
+  padding: 15px 24px; font-size: 16px; font-weight: 700;
+  cursor: pointer; display: inline-block; text-align: center;
+}
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn--ink   { background: var(--navy-mid); color: #fff; padding: 16px 26px; }
+.btn--ink:hover:not(:disabled) { background: var(--navy); }
+.btn--teal  { background: var(--cyan-deep); color: #fff; font-weight: 600; padding: 14px 22px; }
+.btn--teal:hover:not(:disabled) { background: var(--cyan-dark); }
+.btn--amber { background: var(--amber); color: var(--amber-ink); }
+.btn--amber:hover:not(:disabled) { background: #E9A538; }
+.btn--ghost{
+  background: transparent; color: var(--navy-mid);
+  border: 1px solid rgba(18, 34, 47, .3); font-weight: 600; padding: 15px 22px;
+}
+.btn--ghost:hover:not(:disabled) { border-color: var(--navy-mid); }
+.btn--link{
+  background: transparent; border: none; padding: 0;
+  color: var(--rust); font-size: 15px; font-weight: 600; cursor: pointer;
+}
+.btn--link:hover:not(:disabled) { text-decoration: underline; }
+
+.file-btn{
+  background: var(--cyan-deep); color: #fff; border-radius: 8px;
+  padding: 14px 22px; font-size: 16px; font-weight: 600; cursor: pointer;
+  display: inline-block;
+}
+.file-btn:hover { background: var(--cyan-dark); }
+.file-btn input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip{
+  border: 1px solid rgba(18, 34, 47, .28); border-radius: 100px;
+  padding: 10px 18px; font-size: 15px; font-weight: 600;
+  background: transparent; color: var(--ink); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--navy-mid); color: #fff; border-color: var(--navy-mid); }
+
+.note { font-size: 15px; color: var(--muted); margin: 0; }
+
+.status { margin: 0; font-size: 15px; font-weight: 600; min-height: 1.5em; color: var(--cyan-dark); }
+.status--warn { color: var(--rust); }
+
+/* ── Sheet queue list ───────────────────────────────────── */
+
+.queue { display: flex; flex-wrap: wrap; gap: 10px; list-style: none; margin: 0; padding: 0; }
+.queue__item{
+  display: flex; align-items: center; gap: 10px;
+  background: #fff; border-radius: 100px;
+  padding: 9px 8px 9px 16px; font-size: 15px;
+}
+.queue__remove{
+  border: none; background: rgba(18, 34, 47, .08); border-radius: 50%;
+  width: 24px; height: 24px; cursor: pointer; color: var(--ink);
+  font-size: 14px; line-height: 1; padding: 0;
+}
+.queue__remove:hover { background: rgba(18, 34, 47, .18); }
+
+/* ============================================================
+   The name tag itself — one component, two pages.
+
+   Every dimension is a multiple of --u so the same markup renders
+   at 348 x 514 CSS px on screen and at exactly 92 x 136 mm on
+   paper; only --u changes between the two.
+   ============================================================ */
+
+/* Browsers drop background colours and background-images from printouts
+   unless the user ticks "Background graphics". The tag's sand backdrop and
+   the check-in photo are both backgrounds, so force them on — otherwise the
+   sheet prints as bare text on white. Inherited, hence the descendants too. */
+.tag, .tag *{
+  -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+}
+
+.tag{
+  --u: 1px;
+  position: relative; overflow: hidden;
+  width:  calc(var(--u) * 348);
+  height: calc(var(--u) * 514);
+  background: #C9A87C;
+  color: #2A2118;
+  box-shadow: 0 18px 40px rgba(18, 34, 47, .18);
+  padding: calc(var(--u) * 21) calc(var(--u) * 21) calc(var(--u) * 23);
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: space-between; text-align: center;
+}
+.tag__glow{
+  position: absolute; inset: 0;
+  background: radial-gradient(90% 45% at 50% 0%, rgba(14, 110, 134, .18) 0%, rgba(14, 110, 134, 0) 60%);
+}
+.tag__punch{
+  position: relative;
+  width: calc(var(--u) * 49); height: calc(var(--u) * 10);
+  border: 1.5px dashed rgba(27, 44, 56, .45);
+  border-radius: 100px;
+}
+.tag__head{
+  position: relative;
+  display: flex; flex-direction: column; align-items: center;
+  gap: calc(var(--u) * 6);
+}
+.tag__logo { display: flex; align-items: center; gap: calc(var(--u) * 7); }
+.tag__logo-a{
+  font-family: var(--font-display); font-weight: 800;
+  font-size: calc(var(--u) * 16); color: #12222F;
+}
+.tag__logo-a span { color: #0E6E86; }
+.tag__logo-rule { width: 1px; height: calc(var(--u) * 13); background: rgba(27, 44, 56, .35); }
+.tag__logo-b{
+  font-family: var(--font-display); font-weight: 600;
+  font-size: calc(var(--u) * 14); color: #7A5A32;
+}
+.tag__t1 { font-size: calc(var(--u) * 16); line-height: 1.25; font-weight: 600; color: #12222F; }
+.tag__t2 { font-size: calc(var(--u) * 16); line-height: 1.25; color: #7A5A32; }
+.tag__photo{
+  position: relative;
+  width: calc(var(--u) * 153); height: calc(var(--u) * 153);
+  border-radius: 50%;
+  border: 2px solid rgba(27, 44, 56, .45);
+  display: flex; align-items: center; justify-content: center;
+  font-size: calc(var(--u) * 12); color: rgba(27, 44, 56, .55);
+  background: rgba(255, 255, 255, .4);
+  background-repeat: no-repeat;
+}
+.tag__photo--filled { background-color: transparent; color: transparent; }
+.tag__txt{
+  position: relative;
+  display: flex; flex-direction: column; gap: calc(var(--u) * 6);
+  width: 100%;
+}
+.tag__name{
+  font-family: var(--font-display); font-weight: 800;
+  font-size: calc(var(--u) * 33); line-height: 1.02; color: #12222F;
+  overflow-wrap: break-word;
+}
+.tag__name--long { font-size: calc(var(--u) * 25); }
+.tag__skill{
+  font-size: calc(var(--u) * 16); line-height: 1.3;
+  color: #0E6E86; font-weight: 600;
+  overflow-wrap: break-word;
+}
+/* Several skills joined by "|" outgrow one line at full size. */
+.tag__skill--long { font-size: calc(var(--u) * 13); }
+.tag__qr{
+  position: relative;
+  display: flex; align-items: center; gap: calc(var(--u) * 10);
+}
+.tag__qr-slot{
+  position: relative;
+  width: calc(var(--u) * 59); height: calc(var(--u) * 59);
+  background: #fff; border-radius: calc(var(--u) * 5);
+  display: flex; align-items: center; justify-content: center;
+}
+/* Shows through only while assets/img/qr-fanpage.png is absent. */
+.tag__qr-slot span{
+  font-size: calc(var(--u) * 13); font-weight: 700; letter-spacing: .1em;
+  color: rgba(27, 44, 56, .35);
+  border: 1px dashed rgba(27, 44, 56, .3);
+  border-radius: calc(var(--u) * 3);
+  padding: calc(var(--u) * 6) calc(var(--u) * 8);
+}
+/* Opaque and covering the whole slot, so a loaded QR hides the placeholder
+   with no JS involved. Stays an <img> rather than a background-image because
+   browsers drop background graphics from printouts by default. */
+.tag__qr-slot img{
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  background: #fff;
+  border-radius: calc(var(--u) * 5);
+  padding: calc(var(--u) * 3);
+}
+.tag__qr-label{
+  text-align: left; font-size: calc(var(--u) * 16); line-height: 1.3;
+  color: rgba(27, 44, 56, .72); font-weight: 600;
+}
+
+/* Placeholder state — no photo picked yet. */
+.tag--empty .tag__name, .tag--empty .tag__skill { color: rgba(27, 44, 56, .5); }
+
+/* ── Print: A4 portrait, 4 tags per sheet ───────────────── */
+
+@page { size: A4 portrait; margin: 10mm; }
+
+.print-only { display: none; }
+
+@media print{
+  body { background: #fff; }
+  .no-print { display: none !important; }
+  .page { padding: 0; gap: 0; min-height: 0; }
+
+  .print-only { display: block; }
+
+  .sheet{
+    display: grid;
+    grid-template-columns: repeat(2, 92mm);
+    grid-auto-rows: 136mm;
+    gap: 5mm;
+    width: 189mm;
+  }
+  .sheet + .sheet { break-before: page; }
+
+  .sheet .tag{
+    --u: calc(92mm / 348);
+    box-shadow: none;
+    outline: 1px dashed rgba(27, 44, 56, .35);
+    outline-offset: -1px;
+  }
+}
