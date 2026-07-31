@@ -8,6 +8,12 @@
    ============================================================ */
 
 :root{
+  /* Without this, Chrome's "Auto Dark Mode for Web Contents" rewrites the
+     palette on a dark-themed OS: the sand tag turns black, the teal glow
+     blows up, and the navy text stays navy — unreadable, and it bakes
+     straight into the printed PDF. The tag is a light artefact by design. */
+  color-scheme: light;
+
   --ink:          #12222F;
   --navy:         #0B1B27;
   --navy-mid:     #0E2233;
@@ -171,6 +177,8 @@ img { max-width: 100%; }
 }
 .field__input::placeholder { color: rgba(18, 34, 47, .42); }
 
+.field__input--narrow { max-width: 160px; }
+
 .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 560px){ .field-grid { grid-template-columns: 1fr; } }
 
@@ -265,6 +273,8 @@ img { max-width: 100%; }
 .tag, .tag *{
   -webkit-print-color-adjust: exact;
           print-color-adjust: exact;
+  /* Windows High Contrast would otherwise repaint the tag in system colours. */
+  forced-color-adjust: none;
 }
 
 .tag{
@@ -372,6 +382,48 @@ img { max-width: 100%; }
 /* Placeholder state — no photo picked yet. */
 .tag--empty .tag__name, .tag--empty .tag__skill { color: rgba(27, 44, 56, .5); }
 
+/* ============================================================
+   Print modes.
+
+   Registration is the whole game here: a tag printed in `content` mode has
+   to land exactly on top of the same tag printed earlier in `template`
+   mode. So neither mode removes a single box — every element stays in flow
+   and is hidden with `visibility`, which reserves its space. Using
+   `display:none` would let the flex column re-distribute and the two passes
+   would no longer line up.
+   ============================================================ */
+
+/* Phôi: the fixed artwork, with the guest area left blank. */
+.sheet--template .tag__photo{
+  background-image: none !important;
+  color: transparent;              /* drop the "Ảnh check-in" hint */
+}
+.sheet--template .tag__name,
+.sheet--template .tag__skill { visibility: hidden; }
+
+/* In lên phôi: only the variable data, on bare paper. */
+.sheet--content .tag{
+  background: transparent;
+  box-shadow: none;
+}
+.sheet--content .tag__glow,
+.sheet--content .tag__punch,
+.sheet--content .tag__head,
+.sheet--content .tag__qr { visibility: hidden; }
+.sheet--content .tag__photo{
+  border-color: transparent;       /* the ring is already on the phôi */
+  background-color: transparent;
+  color: transparent;
+}
+
+/* On screen the content-only card would be an invisible rectangle. */
+.workbench__preview .sheet--content .tag,
+.workbench__preview .sheet--template .tag{
+  outline: 1px dashed rgba(18, 34, 47, .3);
+  outline-offset: -1px;
+}
+.workbench__preview .sheet--content .tag { box-shadow: none; }
+
 /* ── Print: A4 portrait, 4 tags per sheet ───────────────── */
 
 @page { size: A4 portrait; margin: 10mm; }
@@ -385,12 +437,17 @@ img { max-width: 100%; }
 
   .print-only { display: block; }
 
+  /* 2 x 136mm rows + a 4mm gutter = 276mm, one millimetre inside A4's
+     277mm printable height. At the 5mm the grid would otherwise want, the
+     sheet measures exactly 277mm and sub-pixel rounding tips it over into
+     a spurious blank page. */
   .sheet{
     display: grid;
     grid-template-columns: repeat(2, 92mm);
     grid-auto-rows: 136mm;
-    gap: 5mm;
+    gap: 4mm 5mm;
     width: 189mm;
+    break-inside: avoid;
   }
   .sheet + .sheet { break-before: page; }
 
@@ -400,4 +457,6 @@ img { max-width: 100%; }
     outline: 1px dashed rgba(27, 44, 56, .35);
     outline-offset: -1px;
   }
+  /* The cut guide is already on the phôi — don't lay a second one over it. */
+  .sheet--content .tag { outline: none; }
 }

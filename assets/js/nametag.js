@@ -10,6 +10,23 @@
   var SHEET_MAX = 20;
   var PER_PAGE = 4;
 
+  var MODES = {
+    full: {
+      hint: 'In cả nền lẫn thông tin khách trong một lượt. Dùng khi in thẳng lên giấy trắng.',
+      button: function (n) { return 'In tờ A4 (' + n + ' thẻ)'; }
+    },
+    template: {
+      hint: 'Chỉ in phần thiết kế cố định (nền, logo, tiêu đề, khung ảnh, QR), chừa trống chỗ ảnh và tên. ' +
+            'In trước thành xấp phôi, sau đó quay lại chế độ “Chỉ nội dung” để in đè thông tin khách lên.',
+      button: function (n) { return 'In phôi (' + n + ' tờ)'; }
+    },
+    content: {
+      hint: 'Chỉ in ảnh, tên và skill — không nền, không logo, không QR. Nạp xấp phôi đã in vào khay giấy rồi in đè. ' +
+            'Trong hộp thoại in phải để Scale = 100% (đừng chọn “Fit to page”), nếu không chữ sẽ lệch khỏi phôi.',
+      button: function (n) { return 'In nội dung lên phôi (' + n + ' thẻ)'; }
+    }
+  };
+
   var state = {
     photo: null,
     photoName: '',
@@ -21,15 +38,18 @@
     sheet: [],
     /* How far into the saved-guest list we have already pulled, so a second
        press imports only the newly-saved ones instead of duplicating. */
-    imported: 0
+    imported: 0,
+    mode: 'full',
+    templateSheets: 5
   };
 
   var el = {};
   ['dropzone', 'photo-input', 'photo-label', 'photo-clear',
    'zoom', 'zoom-label', 'posx', 'posx-label', 'posy', 'posy-label',
    'name', 'skill', 'skill-chips', 'add-to-sheet', 'reset-form', 'status',
-   'sheet-count', 'sheet-count-top', 'sheet-hint', 'sheet-list', 'clear-sheet',
-   'import-guests', 'print-sheet', 'print-area', 'preview'
+   'sheet-count', 'sheet-hint', 'sheet-list', 'clear-sheet',
+   'import-guests', 'print-sheet', 'print-area', 'preview',
+   'print-mode', 'mode-hint', 'template-qty', 'template-qty-field'
   ].forEach(function (id) {
     el[id] = document.getElementById(id);
   });
@@ -57,7 +77,10 @@
   /* ── Render ──────────────────────────────────────────── */
 
   function renderPreview() {
-    el.preview.innerHTML = NT.tagHTML(entry());
+    /* The mode class lives on the wrapper so the preview shows exactly what
+       will come off the printer — blank phôi, bare data, or the full card. */
+    el.preview.className = 'sheet--' + state.mode;
+    el.preview.innerHTML = NT.tagHTML(state.mode === 'template' ? {} : entry());
   }
 
   function renderPhotoUI() {
@@ -81,17 +104,43 @@
     }).join('');
   }
 
+  /* Builds the pages that actually reach the printer. Template mode ignores
+     the guest list entirely and lays down blank stock; the other two modes
+     chunk the guests four to a sheet and differ only by the mode class. */
+  function buildPrintArea() {
+    var cls = 'sheet sheet--' + state.mode;
+    var html = '';
+
+    if (state.mode === 'template') {
+      var blanks = '';
+      for (var b = 0; b < PER_PAGE; b++) blanks += NT.tagHTML({});
+      for (var s = 0; s < state.templateSheets; s++) {
+        html += '<div class="' + cls + '">' + blanks + '</div>';
+      }
+    } else {
+      for (var start = 0; start < state.sheet.length; start += PER_PAGE) {
+        html += '<div class="' + cls + '">' +
+          state.sheet.slice(start, start + PER_PAGE).map(NT.tagHTML).join('') +
+          '</div>';
+      }
+    }
+    /* Built eagerly rather than on demand: window.print() fires before a
+       deferred render would land, and Safari prints a stale document. */
+    el['print-area'].innerHTML = html;
+  }
+
   function renderSheet() {
     var count = state.sheet.length;
     var pages = Math.ceil(count / PER_PAGE);
+    var isTemplate = state.mode === 'template';
 
     el['sheet-count'].textContent = count;
-    el['sheet-count-top'].textContent = count;
-    el['print-sheet'].disabled = count === 0;
+    el['print-sheet'].textContent = MODES[state.mode].button(isTemplate ? state.templateSheets : count);
+    el['print-sheet'].disabled = isTemplate ? state.templateSheets < 1 : count === 0;
     el['clear-sheet'].hidden = count === 0;
 
     el['sheet-hint'].textContent = count
-      ? 'Bấm “In tờ A4” để xuất ' + pages + ' tờ — mỗi tờ 4 thẻ, cắt theo viền đứt.'
+      ? 'Xuất ' + pages + ' tờ — mỗi tờ 4 thẻ, cắt theo viền đứt.'
       : 'Chưa có thẻ nào. Nhập thông tin rồi bấm “Thêm vào tờ in”.';
 
     el['sheet-list'].innerHTML = state.sheet.map(function (item, index) {
@@ -102,18 +151,32 @@
         '" aria-label="Bỏ ' + NT.esc(label) + ' khỏi tờ in">×</button></li>';
     }).join('');
 
-    /* Rebuild the printable DOM eagerly: window.print() fires before a
-       deferred render would land, and Safari prints a stale document. */
-    var html = '';
-    for (var start = 0; start < count; start += PER_PAGE) {
-      html += '<div class="sheet">' +
-        state.sheet.slice(start, start + PER_PAGE).map(NT.tagHTML).join('') +
-        '</div>';
-    }
-    el['print-area'].innerHTML = html;
-
+    buildPrintArea();
     renderImportButton();
   }
+
+  function renderMode() {
+    [].forEach.call(el['print-mode'].querySelectorAll('[data-mode]'), function (button) {
+      button.setAttribute('aria-pressed', String(button.dataset.mode === state.mode));
+    });
+    el['mode-hint'].textContent = MODES[state.mode].hint;
+    el['template-qty-field'].hidden = state.mode !== 'template';
+  }
+
+  el['print-mode'].addEventListener('click', function (event) {
+    var button = event.target.closest('[data-mode]');
+    if (!button || !MODES[button.dataset.mode]) return;
+    state.mode = button.dataset.mode;
+    renderMode();
+    renderSheet();
+    renderPreview();
+  });
+
+  el['template-qty'].addEventListener('input', function (event) {
+    var qty = parseInt(event.target.value, 10);
+    state.templateSheets = isFinite(qty) && qty > 0 ? Math.min(qty, 25) : 0;
+    renderSheet();
+  });
 
   function renderImportButton() {
     var pending = Math.max(0, NT.store.load().length - state.imported);
@@ -266,7 +329,7 @@
   });
 
   el['print-sheet'].addEventListener('click', function () {
-    if (!state.sheet.length) return;
+    if (state.mode === 'template' ? state.templateSheets < 1 : !state.sheet.length) return;
     window.print();
   });
 
@@ -274,6 +337,7 @@
 
   renderChips();
   renderPhotoUI();
+  renderMode();
   renderPreview();
   renderSheet();
 })();

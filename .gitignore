@@ -16,3 +16,8 @@ assets/img/_qr.png
 # Local
 *.log
 .cache/
+
+# Bản in thử xuất ra từ trình duyệt.
+# Không dùng "*.pdf": Chrome đặt tên file theo <title>, và dấu tổ hợp của
+# chữ "ơ" rơi xuống sau dấu chấm nên đuôi thật là ".<U+031B>pdf".
+*pdf

@@ -40,7 +40,8 @@
       <p class="page-lede">Tải ảnh khách, nhập tên Facebook và skill chính — thẻ dựng ngay bên phải. Thêm vào tờ in rồi bấm In để ra A4, 4 thẻ mỗi tờ (92 × 136 mm).</p>
     </div>
     <div class="row">
-      <button class="btn btn--ink" type="button" id="print-sheet" disabled>In tờ A4 (<span id="sheet-count-top">0</span> thẻ)</button>
+      <!-- Label is rewritten by nametag.js to match the selected print mode. -->
+      <button class="btn btn--ink" type="button" id="print-sheet" disabled>In tờ A4</button>
     </div>
   </div>
 
@@ -111,6 +112,22 @@
           <button class="btn btn--teal" type="button" id="import-guests" hidden></button>
         </div>
         <ul class="queue" id="sheet-list"></ul>
+      </section>
+
+      <!-- ── 4. Chế độ in ───────────────────────────────── -->
+      <section class="panel" aria-labelledby="p-mode">
+        <h2 class="panel__title" id="p-mode">4 · Chế độ in</h2>
+        <div class="chips" id="print-mode" role="group" aria-labelledby="p-mode">
+          <button class="chip" type="button" data-mode="full" aria-pressed="true">Thẻ đầy đủ</button>
+          <button class="chip" type="button" data-mode="template" aria-pressed="false">Chỉ phôi</button>
+          <button class="chip" type="button" data-mode="content" aria-pressed="false">Chỉ nội dung</button>
+        </div>
+        <p class="panel__hint" id="mode-hint"></p>
+
+        <div class="field" id="template-qty-field" hidden>
+          <label class="field__label" for="template-qty">Số tờ phôi cần in (4 phôi / tờ)</label>
+          <input class="field__input field__input--narrow" type="number" id="template-qty" min="1" max="25" step="1" value="5">
+        </div>
       </section>
     </div>
 
