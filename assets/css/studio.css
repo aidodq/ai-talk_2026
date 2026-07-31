@@ -393,15 +393,27 @@ img { max-width: 100%; }
    would no longer line up.
    ============================================================ */
 
-/* Phôi: the fixed artwork, with the guest area left blank. */
-.sheet--template .tag__photo{
-  background-image: none !important;
-  color: transparent;              /* drop the "Ảnh check-in" hint */
-}
+/* Who owns the photo circle: the CONTENT layer, in every workflow. Both
+   phôi modes hide it entirely, so the ring is drawn exactly once and can
+   never double-print slightly off-register. */
+
+/* Phôi giấy trắng: the full artwork, guest area left blank. */
+.sheet--template .tag__photo,
 .sheet--template .tag__name,
 .sheet--template .tag__skill { visibility: hidden; }
 
-/* In lên phôi: only the variable data, on bare paper. */
+/* Phôi giấy kraft: same fixed ink minus every background — the paper is
+   already the colour — leaving the cut border as the only frame. */
+.sheet--kraft .tag{
+  background: transparent;
+  box-shadow: none;
+}
+.sheet--kraft .tag__glow,
+.sheet--kraft .tag__photo,
+.sheet--kraft .tag__name,
+.sheet--kraft .tag__skill { visibility: hidden; }
+
+/* In lên phôi: the variable data plus its own circle, on bare paper. */
 .sheet--content .tag{
   background: transparent;
   box-shadow: none;
@@ -411,18 +423,21 @@ img { max-width: 100%; }
 .sheet--content .tag__head,
 .sheet--content .tag__qr { visibility: hidden; }
 .sheet--content .tag__photo{
-  border-color: transparent;       /* the ring is already on the phôi */
-  background-color: transparent;
-  color: transparent;
+  background-color: transparent;   /* no white disc on a guest with no photo */
+  color: transparent;              /* drop the "Ảnh check-in" hint */
 }
 
-/* On screen the content-only card would be an invisible rectangle. */
+/* On screen these modes would otherwise be invisible rectangles. */
 .workbench__preview .sheet--content .tag,
-.workbench__preview .sheet--template .tag{
-  outline: 1px dashed rgba(18, 34, 47, .3);
+.workbench__preview .sheet--template .tag,
+.workbench__preview .sheet--kraft .tag{
+  outline: 1px dashed rgba(18, 34, 47, .35);
   outline-offset: -1px;
+  box-shadow: none;
 }
-.workbench__preview .sheet--content .tag { box-shadow: none; }
+/* Preview only — simulates the kraft stock so the ink can be judged
+   against brown paper. Nothing here reaches the printer. */
+.workbench__preview .sheet--kraft .tag { background: #C4A484; }
 
 /* ── Print: A4 portrait, 4 tags per sheet ───────────────── */
 
@@ -459,4 +474,8 @@ img { max-width: 100%; }
   }
   /* The cut guide is already on the phôi — don't lay a second one over it. */
   .sheet--content .tag { outline: none; }
+
+  /* On kraft the cut line is the only frame on the sheet, so it has to
+     read against brown paper rather than sit at artwork-guide weight. */
+  .sheet--kraft .tag { outline-color: rgba(27, 44, 56, .8); }
 }

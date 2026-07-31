@@ -16,16 +16,28 @@
       button: function (n) { return 'In tờ A4 (' + n + ' thẻ)'; }
     },
     template: {
-      hint: 'Chỉ in phần thiết kế cố định (nền, logo, tiêu đề, khung ảnh, QR), chừa trống chỗ ảnh và tên. ' +
-            'In trước thành xấp phôi, sau đó quay lại chế độ “Chỉ nội dung” để in đè thông tin khách lên.',
-      button: function (n) { return 'In phôi (' + n + ' tờ)'; }
+      blank: true,
+      hint: 'Phôi cho giấy trắng: in nền, logo, tiêu đề và QR, chừa trống chỗ ảnh và tên. ' +
+            'In trước thành xấp phôi, sau đó chuyển sang “Chỉ nội dung” để in đè thông tin khách lên.',
+      button: function (n) { return 'In phôi trắng (' + n + ' tờ)'; }
+    },
+    kraft: {
+      blank: true,
+      hint: 'Phôi cho giấy kraft: logo, tiêu đề, QR và viền chấm để cắt — bỏ hết nền vì giấy kraft đã là màu nền. ' +
+            'Khung tròn cũng bỏ, nó nằm ở lượt in nội dung. Nhớ để Scale = 100% ở cả hai lượt.',
+      button: function (n) { return 'In phôi kraft (' + n + ' tờ)'; }
     },
     content: {
-      hint: 'Chỉ in ảnh, tên và skill — không nền, không logo, không QR. Nạp xấp phôi đã in vào khay giấy rồi in đè. ' +
-            'Trong hộp thoại in phải để Scale = 100% (đừng chọn “Fit to page”), nếu không chữ sẽ lệch khỏi phôi.',
+      hint: 'Chỉ in ảnh (kèm khung tròn), tên và skill — không nền, không logo, không QR. ' +
+            'Nạp xấp phôi đã in vào khay giấy rồi in đè. ' +
+            'Trong hộp thoại in phải để Scale = 100% (đừng chọn “Fit to page”), nếu không sẽ lệch khỏi phôi.',
       button: function (n) { return 'In nội dung lên phôi (' + n + ' thẻ)'; }
     }
   };
+
+  function isBlankMode() {
+    return !!MODES[state.mode].blank;
+  }
 
   var state = {
     photo: null,
@@ -80,7 +92,7 @@
     /* The mode class lives on the wrapper so the preview shows exactly what
        will come off the printer — blank phôi, bare data, or the full card. */
     el.preview.className = 'sheet--' + state.mode;
-    el.preview.innerHTML = NT.tagHTML(state.mode === 'template' ? {} : entry());
+    el.preview.innerHTML = NT.tagHTML(isBlankMode() ? {} : entry());
   }
 
   function renderPhotoUI() {
@@ -111,7 +123,7 @@
     var cls = 'sheet sheet--' + state.mode;
     var html = '';
 
-    if (state.mode === 'template') {
+    if (isBlankMode()) {
       var blanks = '';
       for (var b = 0; b < PER_PAGE; b++) blanks += NT.tagHTML({});
       for (var s = 0; s < state.templateSheets; s++) {
@@ -132,11 +144,11 @@
   function renderSheet() {
     var count = state.sheet.length;
     var pages = Math.ceil(count / PER_PAGE);
-    var isTemplate = state.mode === 'template';
+    var blank = isBlankMode();
 
     el['sheet-count'].textContent = count;
-    el['print-sheet'].textContent = MODES[state.mode].button(isTemplate ? state.templateSheets : count);
-    el['print-sheet'].disabled = isTemplate ? state.templateSheets < 1 : count === 0;
+    el['print-sheet'].textContent = MODES[state.mode].button(blank ? state.templateSheets : count);
+    el['print-sheet'].disabled = blank ? state.templateSheets < 1 : count === 0;
     el['clear-sheet'].hidden = count === 0;
 
     el['sheet-hint'].textContent = count
@@ -160,7 +172,7 @@
       button.setAttribute('aria-pressed', String(button.dataset.mode === state.mode));
     });
     el['mode-hint'].textContent = MODES[state.mode].hint;
-    el['template-qty-field'].hidden = state.mode !== 'template';
+    el['template-qty-field'].hidden = !isBlankMode();
   }
 
   el['print-mode'].addEventListener('click', function (event) {
@@ -329,7 +341,7 @@
   });
 
   el['print-sheet'].addEventListener('click', function () {
-    if (state.mode === 'template' ? state.templateSheets < 1 : !state.sheet.length) return;
+    if (isBlankMode() ? state.templateSheets < 1 : !state.sheet.length) return;
     window.print();
   });
 
