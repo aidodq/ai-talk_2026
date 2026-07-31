@@ -96,6 +96,8 @@
 
   /* ── 2. Tag markup ───────────────────────────────────── */
 
+  /* The image sits on its own layer inside the ring so a print filter can
+     be applied to the photo alone, without also washing out the border. */
   function photoStyle(entry) {
     if (!entry.photo) return '';
     return ' style="background-image:url(' + esc(entry.photo) + ');' +
@@ -129,8 +131,9 @@
           '<div class="tag__t1">AI &amp; Software Engineering</div>' +
           '<div class="tag__t2">From Footprints to Startup Reality</div>' +
         '</div>' +
-        '<div class="tag__photo' + (entry.photo ? ' tag__photo--filled' : '') + '"' + photoStyle(entry) + '>' +
-          (entry.photo ? '' : 'Ảnh check-in') +
+        '<div class="tag__photo' + (entry.photo ? ' tag__photo--filled' : '') + '">' +
+          '<div class="tag__photo-img"' + photoStyle(entry) + '></div>' +
+          (entry.photo ? '' : '<span class="tag__photo-hint">Ảnh check-in</span>') +
         '</div>' +
         '<div class="tag__txt">' +
           '<div class="' + nameClass(name) + '">' + esc(name || '[Facebook Name]') + '</div>' +

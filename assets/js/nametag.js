@@ -39,6 +39,33 @@
     return !!MODES[state.mode].blank;
   }
 
+  /* Photo treatments. Kraft is a dark, absorbent stock: the paper is the
+     brightest thing the print can ever be, so highlights vanish and the
+     whole image sits low. Each preset trades some fidelity for separation. */
+  var TREATMENTS = {
+    none: {
+      base: '',
+      contrast: 100,
+      hint: 'Ảnh giữ nguyên màu. Trên kraft sẽ hơi tối và ngả nâu vì giấy nâu ăn hết vùng sáng.'
+    },
+    punch: {
+      base: 'saturate(1.2) brightness(1.12)',
+      contrast: 130,
+      hint: 'Đẩy sáng và tăng độ rực để bù phần bị giấy nâu nuốt. Hợp với ảnh chân dung chụp đủ sáng.'
+    },
+    mono: {
+      base: 'grayscale(1) brightness(1.15)',
+      contrast: 145,
+      hint: 'Chuyển đơn sắc rồi ép tương phản — ảnh đọc như bản in lụa trên kraft. An toàn nhất khi ảnh gốc bị ngược sáng.'
+    }
+  };
+
+  function photoFilter() {
+    if (!state.kraftInk) return 'none';
+    var treat = TREATMENTS[state.treat];
+    return (treat.base ? treat.base + ' ' : '') + 'contrast(' + state.photoContrast + '%)';
+  }
+
   var state = {
     photo: null,
     photoName: '',
@@ -52,7 +79,11 @@
        press imports only the newly-saved ones instead of duplicating. */
     imported: 0,
     mode: 'full',
-    templateSheets: 5
+    templateSheets: 5,
+    kraftInk: false,
+    paper: '#C4A484',
+    treat: 'none',
+    photoContrast: 100
   };
 
   var el = {};
@@ -61,7 +92,9 @@
    'name', 'skill', 'skill-chips', 'add-to-sheet', 'reset-form', 'status',
    'sheet-count', 'sheet-hint', 'sheet-list', 'clear-sheet',
    'import-guests', 'print-sheet', 'print-area', 'preview',
-   'print-mode', 'mode-hint', 'template-qty', 'template-qty-field'
+   'print-mode', 'mode-hint', 'template-qty', 'template-qty-field',
+   'kraft-ink', 'kraft-ink-controls', 'paper-colour', 'photo-treat', 'treat-hint',
+   'photo-contrast', 'photo-contrast-label'
   ].forEach(function (id) {
     el[id] = document.getElementById(id);
   });
@@ -91,7 +124,9 @@
   function renderPreview() {
     /* The mode class lives on the wrapper so the preview shows exactly what
        will come off the printer — blank phôi, bare data, or the full card. */
-    el.preview.className = 'sheet--' + state.mode;
+    el.preview.className = 'sheet--' + state.mode + (state.kraftInk ? ' is-kraft-ink' : '');
+    el.preview.style.setProperty('--paper', state.paper);
+    el.preview.style.setProperty('--photo-filter', photoFilter());
     el.preview.innerHTML = NT.tagHTML(isBlankMode() ? {} : entry());
   }
 
@@ -120,8 +155,12 @@
      the guest list entirely and lays down blank stock; the other two modes
      chunk the guests four to a sheet and differ only by the mode class. */
   function buildPrintArea() {
-    var cls = 'sheet sheet--' + state.mode;
+    var cls = 'sheet sheet--' + state.mode + (state.kraftInk ? ' is-kraft-ink' : '');
     var html = '';
+
+    /* Ink compensation must reach the printer, so it rides on the print
+       area itself — unlike the --paper simulation, which is preview-only. */
+    el['print-area'].style.setProperty('--photo-filter', photoFilter());
 
     if (isBlankMode()) {
       var blanks = '';
@@ -175,13 +214,58 @@
     el['template-qty-field'].hidden = !isBlankMode();
   }
 
+  function renderKraftInk() {
+    el['kraft-ink'].checked = state.kraftInk;
+    el['kraft-ink-controls'].hidden = !state.kraftInk;
+    el['paper-colour'].value = state.paper;
+    el['photo-contrast'].value = state.photoContrast;
+    el['photo-contrast-label'].textContent = state.photoContrast + '%';
+    el['treat-hint'].textContent = TREATMENTS[state.treat].hint;
+    [].forEach.call(el['photo-treat'].querySelectorAll('[data-treat]'), function (button) {
+      button.setAttribute('aria-pressed', String(button.dataset.treat === state.treat));
+    });
+  }
+
+  function refreshInk() {
+    renderKraftInk();
+    renderSheet();
+    renderPreview();
+  }
+
   el['print-mode'].addEventListener('click', function (event) {
     var button = event.target.closest('[data-mode]');
     if (!button || !MODES[button.dataset.mode]) return;
     state.mode = button.dataset.mode;
+    /* Picking the kraft phôi implies kraft stock; switching back to the
+       white-paper phôi implies it is no longer needed. The content pass is
+       left alone — it can be aimed at either stock. */
+    if (state.mode === 'kraft') state.kraftInk = true;
+    else if (state.mode === 'template') state.kraftInk = false;
     renderMode();
-    renderSheet();
+    refreshInk();
+  });
+
+  el['kraft-ink'].addEventListener('change', function (event) {
+    state.kraftInk = event.target.checked;
+    refreshInk();
+  });
+
+  el['paper-colour'].addEventListener('input', function (event) {
+    state.paper = event.target.value;
     renderPreview();
+  });
+
+  el['photo-contrast'].addEventListener('input', function (event) {
+    state.photoContrast = Number(event.target.value);
+    refreshInk();
+  });
+
+  el['photo-treat'].addEventListener('click', function (event) {
+    var button = event.target.closest('[data-treat]');
+    if (!button || !TREATMENTS[button.dataset.treat]) return;
+    state.treat = button.dataset.treat;
+    state.photoContrast = TREATMENTS[state.treat].contrast;
+    refreshInk();
   });
 
   el['template-qty'].addEventListener('input', function (event) {
@@ -350,6 +434,7 @@
   renderChips();
   renderPhotoUI();
   renderMode();
+  renderKraftInk();
   renderPreview();
   renderSheet();
 })();

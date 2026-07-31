@@ -130,6 +130,45 @@
           <input class="field__input field__input--narrow" type="number" id="template-qty" min="1" max="25" step="1" value="5">
         </div>
       </section>
+
+      <!-- ── 5. Bù mực giấy kraft ───────────────────────── -->
+      <section class="panel" aria-labelledby="p-ink">
+        <div class="panel__head">
+          <h2 class="panel__title" id="p-ink">5 · Bù mực cho giấy kraft</h2>
+          <label class="toggle">
+            <input type="checkbox" id="kraft-ink">
+            <span>Bật</span>
+          </label>
+        </div>
+        <p class="panel__hint">
+          Máy in chỉ cộng mực, không in được màu trắng và không làm sáng giấy. Trên kraft, mực teal
+          <code>#0E6E86</code> và nâu <code>#7A5A32</code> chỉ đạt tương phản 2,5:1 và 2,7:1 — đọc được trên màn
+          hình nhưng ra giấy sẽ chìm. Bật mục này để đẩy riêng hai màu đó xuống ~5,5:1, giữ nguyên chữ navy và QR.
+        </p>
+
+        <div id="kraft-ink-controls" hidden>
+          <div class="field-grid">
+            <div class="field">
+              <label class="field__label" for="paper-colour">Màu giấy kraft <span class="field__hint">— chỉ để xem trước</span></label>
+              <input class="field__colour" type="color" id="paper-colour" value="#C4A484">
+            </div>
+            <div class="field">
+              <label class="field__label" for="photo-contrast">Tương phản ảnh · <span id="photo-contrast-label">100%</span></label>
+              <input class="slider" type="range" id="photo-contrast" min="80" max="200" step="5" value="100">
+            </div>
+          </div>
+
+          <div class="field">
+            <span class="field__label" id="photo-treat-label">Xử lý ảnh chân dung</span>
+            <div class="chips" id="photo-treat" role="group" aria-labelledby="photo-treat-label">
+              <button class="chip" type="button" data-treat="none" aria-pressed="true">Giữ màu</button>
+              <button class="chip" type="button" data-treat="punch" aria-pressed="false">Tăng tương phản</button>
+              <button class="chip" type="button" data-treat="mono" aria-pressed="false">Đơn sắc</button>
+            </div>
+            <p class="note" id="treat-hint"></p>
+          </div>
+        </div>
+      </section>
     </div>
 
     <div class="workbench__preview">

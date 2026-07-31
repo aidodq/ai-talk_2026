@@ -179,6 +179,23 @@ img { max-width: 100%; }
 
 .field__input--narrow { max-width: 160px; }
 
+.field__colour{
+  width: 84px; height: 44px; padding: 4px;
+  border: 1px solid var(--line-field); border-radius: 8px;
+  background: var(--cream); cursor: pointer;
+}
+
+.toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; cursor: pointer; }
+.toggle input { width: 18px; height: 18px; accent-color: var(--cyan-deep); cursor: pointer; }
+
+code{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: .92em; background: rgba(18, 34, 47, .07);
+  padding: 1px 5px; border-radius: 4px;
+}
+
+#kraft-ink-controls { display: flex; flex-direction: column; gap: 20px; }
+
 .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 560px){ .field-grid { grid-template-columns: 1fr; } }
 
@@ -318,16 +335,24 @@ img { max-width: 100%; }
 .tag__t1 { font-size: calc(var(--u) * 16); line-height: 1.25; font-weight: 600; color: #12222F; }
 .tag__t2 { font-size: calc(var(--u) * 16); line-height: 1.25; color: #7A5A32; }
 .tag__photo{
-  position: relative;
+  position: relative; overflow: hidden;
   width: calc(var(--u) * 153); height: calc(var(--u) * 153);
   border-radius: 50%;
   border: 2px solid rgba(27, 44, 56, .45);
   display: flex; align-items: center; justify-content: center;
-  font-size: calc(var(--u) * 12); color: rgba(27, 44, 56, .55);
   background: rgba(255, 255, 255, .4);
-  background-repeat: no-repeat;
 }
-.tag__photo--filled { background-color: transparent; color: transparent; }
+.tag__photo--filled { background-color: transparent; }
+/* Own layer so a print filter hits the photo and not the ring around it. */
+.tag__photo-img{
+  position: absolute; inset: 0;
+  background-repeat: no-repeat;
+  filter: var(--photo-filter, none);
+}
+.tag__photo-hint{
+  position: relative;
+  font-size: calc(var(--u) * 12); color: rgba(27, 44, 56, .55);
+}
 .tag__txt{
   position: relative;
   display: flex; flex-direction: column; gap: calc(var(--u) * 6);
@@ -424,8 +449,24 @@ img { max-width: 100%; }
 .sheet--content .tag__qr { visibility: hidden; }
 .sheet--content .tag__photo{
   background-color: transparent;   /* no white disc on a guest with no photo */
-  color: transparent;              /* drop the "Ảnh check-in" hint */
 }
+.sheet--content .tag__photo-hint { visibility: hidden; }
+
+/* ── Bù mực cho giấy kraft ──────────────────────────────────
+   A printer only ever adds ink; it cannot lay down white or lighten the
+   stock. Measured against kraft (#C4A484) the design's two mid-tone inks
+   land at 2.5:1 and 2.7:1 — legible on a backlit screen, mud on paper.
+   This block pushes just those two down to ~5.5:1 and leaves the navy and
+   the QR black alone, since they already clear 6.9:1.
+   ─────────────────────────────────────────────────────────── */
+.is-kraft-ink .tag__logo-b,
+.is-kraft-ink .tag__t2,
+.is-kraft-ink .tag__qr-label { color: #402E17; }
+.is-kraft-ink .tag__logo-a span,
+.is-kraft-ink .tag__skill { color: #0B4A5C; }
+.is-kraft-ink .tag__photo { border-color: rgba(27, 44, 56, .75); }
+/* The glow is a pale wash — invisible on brown, and it only muddies. */
+.is-kraft-ink .tag__glow { display: none; }
 
 /* On screen these modes would otherwise be invisible rectangles. */
 .workbench__preview .sheet--content .tag,
@@ -437,7 +478,8 @@ img { max-width: 100%; }
 }
 /* Preview only — simulates the kraft stock so the ink can be judged
    against brown paper. Nothing here reaches the printer. */
-.workbench__preview .sheet--kraft .tag { background: #C4A484; }
+.workbench__preview .is-kraft-ink .tag,
+.workbench__preview .sheet--kraft .tag { background: var(--paper, #C4A484); }
 
 /* ── Print: A4 portrait, 4 tags per sheet ───────────────── */
 
