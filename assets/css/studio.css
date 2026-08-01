@@ -36,6 +36,17 @@
   --font-body:    'Be Vietnam Pro', 'Segoe UI', sans-serif;
 
   --radius:       14px;
+
+  /* ── Kích thước thẻ tên ──────────────────────────────────
+     The tag is drawn on a 348 x 514 unit grid. Set the printed width here
+     and everything else follows: the height, the print sheet, the preview,
+     and every inner dimension (they are all multiples of --u).
+       84mm / 348 units  ->  514 units = 124.07mm tall
+     ──────────────────────────────────────────────────────── */
+  --tag-cols:   348;
+  --tag-rows:   514;
+  --tag-width:  84mm;
+  --u-print:    calc(var(--tag-width) / var(--tag-cols));
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -140,10 +151,11 @@ img { max-width: 100%; }
   font-size: 13px; letter-spacing: .22em; text-transform: uppercase;
   color: var(--brown); font-weight: 700;
 }
-/* The tag is a fixed 348u box. On phones that is wider than the gutter
-   allows, so the on-screen preview shrinks its unit to fit; print sets
-   its own --u and is unaffected. */
-.workbench__preview .tag { --u: min(1px, calc((100vw - 44px) / 348)); }
+/* The preview renders at true physical size. On phones even that is wider
+   than the gutter allows, so it shrinks its unit to fit. */
+.workbench__preview .tag{
+  --u: min(var(--u-print), calc((100vw - 44px) / var(--tag-cols)));
+}
 
 @media (max-width: 980px){
   .workbench { grid-template-columns: minmax(0, 1fr); }
@@ -278,9 +290,9 @@ code{
 /* ============================================================
    The name tag itself — one component, two pages.
 
-   Every dimension is a multiple of --u so the same markup renders
-   at 348 x 514 CSS px on screen and at exactly 92 x 136 mm on
-   paper; only --u changes between the two.
+   Every dimension is a multiple of --u, so one markup serves both the
+   screen preview and the printed sheet; only --u changes between them.
+   Its printed value comes from --tag-width at the top of this file.
    ============================================================ */
 
 /* Browsers drop background colours and background-images from printouts
@@ -295,10 +307,10 @@ code{
 }
 
 .tag{
-  --u: 1px;
+  --u: var(--u-print);
   position: relative; overflow: hidden;
-  width:  calc(var(--u) * 348);
-  height: calc(var(--u) * 514);
+  width:  calc(var(--u) * var(--tag-cols));
+  height: calc(var(--u) * var(--tag-rows));
   background: #C9A87C;
   color: #2A2118;
   box-shadow: 0 18px 40px rgba(18, 34, 47, .18);
@@ -494,22 +506,22 @@ code{
 
   .print-only { display: block; }
 
-  /* 2 x 136mm rows + a 4mm gutter = 276mm, one millimetre inside A4's
-     277mm printable height. At the 5mm the grid would otherwise want, the
-     sheet measures exactly 277mm and sub-pixel rounding tips it over into
-     a spurious blank page. */
+  /* 84 x 124.07mm tags, 2 x 2 to a sheet: 178 x 256.1mm inside A4's
+     190 x 277mm printable area. Rows are derived from --u rather than
+     hard-coded, so they can never drift from the tag's real height and
+     spill a spurious blank page. */
   .sheet{
+    --u: var(--u-print);
     display: grid;
-    grid-template-columns: repeat(2, 92mm);
-    grid-auto-rows: 136mm;
-    gap: 4mm 5mm;
-    width: 189mm;
+    grid-template-columns: repeat(2, calc(var(--u) * var(--tag-cols)));
+    grid-auto-rows: calc(var(--u) * var(--tag-rows));
+    gap: 8mm 10mm;
+    width: max-content;
     break-inside: avoid;
   }
   .sheet + .sheet { break-before: page; }
 
   .sheet .tag{
-    --u: calc(92mm / 348);
     box-shadow: none;
     outline: 1px dashed rgba(27, 44, 56, .35);
     outline-offset: -1px;
