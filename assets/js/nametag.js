@@ -8,7 +8,30 @@
   var NT = window.NameTag;
   var DEFAULTS = { zoom: 430, posX: 63, posY: 20 };
   var SHEET_MAX = 20;
-  var PER_PAGE = 4;
+
+  /* @page size cannot be toggled by a class, so it is swapped by rewriting
+     a dedicated style element whenever the paper changes. */
+  var PAPERS = {
+    a4: {
+      perPage: 4,
+      css: '@page { size: A4 portrait; margin: 10mm; }',
+      hint: '4 thẻ mỗi tờ. Giữa tờ có đường cắt chấm: in 2 thẻ hàng trên rồi cắt đôi là phát được ngay ' +
+            'cho khách, nửa dưới còn nguyên để dành. Khi có thêm khách thì chuyển sang khổ A5 và in lên nửa đó.'
+    },
+    a5: {
+      perPage: 2,
+      css: '@page { size: 210mm 148.5mm; margin: 10mm; }',
+      hint: '2 thẻ mỗi tờ — dùng cho nửa tờ A4 đã cắt. Nạp nửa giấy vào khay theo chiều ngang (cạnh 210mm ' +
+            'nằm ngang). Thẻ rơi đúng vị trí như khi in trên A4, không lệch.'
+    }
+  };
+
+  var pageStyle = document.createElement('style');
+  document.head.appendChild(pageStyle);
+
+  function perPage() {
+    return PAPERS[state.paperSize].perPage;
+  }
 
   var MODES = {
     full: {
@@ -79,6 +102,7 @@
        press imports only the newly-saved ones instead of duplicating. */
     imported: 0,
     mode: 'full',
+    paperSize: 'a4',
     templateSheets: 5,
     kraftInk: false,
     paper: '#C4A484',
@@ -93,6 +117,7 @@
    'sheet-count', 'sheet-hint', 'sheet-list', 'clear-sheet',
    'import-guests', 'print-sheet', 'print-area', 'preview',
    'print-mode', 'mode-hint', 'template-qty', 'template-qty-field',
+   'paper-size', 'paper-hint', 'per-page',
    'kraft-ink', 'kraft-ink-controls', 'paper-colour', 'photo-treat', 'treat-hint',
    'photo-contrast', 'photo-contrast-label'
   ].forEach(function (id) {
@@ -156,6 +181,11 @@
      chunk the guests four to a sheet and differ only by the mode class. */
   function buildPrintArea() {
     var cls = 'sheet sheet--' + state.mode + (state.kraftInk ? ' is-kraft-ink' : '');
+    var per = perPage();
+    /* Only the full A4 gets a cut guide; an A5 half is already cut. */
+    var cut = state.paperSize === 'a4'
+      ? '<div class="sheet__cut" aria-hidden="true"><span>&#9986; CẮT ĐÔI THÀNH 2 TỜ A5</span></div>'
+      : '';
     var html = '';
 
     /* Ink compensation must reach the printer, so it rides on the print
@@ -164,14 +194,14 @@
 
     if (isBlankMode()) {
       var blanks = '';
-      for (var b = 0; b < PER_PAGE; b++) blanks += NT.tagHTML({});
+      for (var b = 0; b < per; b++) blanks += NT.tagHTML({});
       for (var s = 0; s < state.templateSheets; s++) {
-        html += '<div class="' + cls + '">' + blanks + '</div>';
+        html += '<div class="' + cls + '">' + cut + blanks + '</div>';
       }
     } else {
-      for (var start = 0; start < state.sheet.length; start += PER_PAGE) {
-        html += '<div class="' + cls + '">' +
-          state.sheet.slice(start, start + PER_PAGE).map(NT.tagHTML).join('') +
+      for (var start = 0; start < state.sheet.length; start += per) {
+        html += '<div class="' + cls + '">' + cut +
+          state.sheet.slice(start, start + per).map(NT.tagHTML).join('') +
           '</div>';
       }
     }
@@ -182,7 +212,7 @@
 
   function renderSheet() {
     var count = state.sheet.length;
-    var pages = Math.ceil(count / PER_PAGE);
+    var pages = Math.ceil(count / perPage());
     var blank = isBlankMode();
 
     el['sheet-count'].textContent = count;
@@ -191,7 +221,8 @@
     el['clear-sheet'].hidden = count === 0;
 
     el['sheet-hint'].textContent = count
-      ? 'Xuất ' + pages + ' tờ — mỗi tờ 4 thẻ, cắt theo viền đứt.'
+      ? 'Xuất ' + pages + ' tờ ' + (state.paperSize === 'a4' ? 'A4' : 'A5') +
+        ' — mỗi tờ ' + perPage() + ' thẻ, cắt theo viền chấm.'
       : 'Chưa có thẻ nào. Nhập thông tin rồi bấm “Thêm vào tờ in”.';
 
     el['sheet-list'].innerHTML = state.sheet.map(function (item, index) {
@@ -231,6 +262,23 @@
     renderSheet();
     renderPreview();
   }
+
+  function renderPaper() {
+    pageStyle.textContent = PAPERS[state.paperSize].css;
+    el['paper-hint'].textContent = PAPERS[state.paperSize].hint;
+    el['per-page'].textContent = perPage();
+    [].forEach.call(el['paper-size'].querySelectorAll('[data-paper]'), function (button) {
+      button.setAttribute('aria-pressed', String(button.dataset.paper === state.paperSize));
+    });
+  }
+
+  el['paper-size'].addEventListener('click', function (event) {
+    var button = event.target.closest('[data-paper]');
+    if (!button || !PAPERS[button.dataset.paper]) return;
+    state.paperSize = button.dataset.paper;
+    renderPaper();
+    renderSheet();
+  });
 
   el['print-mode'].addEventListener('click', function (event) {
     var button = event.target.closest('[data-mode]');
@@ -433,6 +481,7 @@
 
   renderChips();
   renderPhotoUI();
+  renderPaper();
   renderMode();
   renderKraftInk();
   renderPreview();

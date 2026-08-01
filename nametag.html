@@ -126,15 +126,25 @@
         <p class="panel__hint" id="mode-hint"></p>
 
         <div class="field" id="template-qty-field" hidden>
-          <label class="field__label" for="template-qty">Số tờ phôi cần in (4 phôi / tờ)</label>
+          <label class="field__label" for="template-qty">Số tờ phôi cần in (<span id="per-page">4</span> phôi / tờ)</label>
           <input class="field__input field__input--narrow" type="number" id="template-qty" min="1" max="25" step="1" value="5">
         </div>
       </section>
 
-      <!-- ── 5. Bù mực giấy kraft ───────────────────────── -->
+      <!-- ── 5. Khổ giấy ────────────────────────────────── -->
+      <section class="panel" aria-labelledby="p-paper">
+        <h2 class="panel__title" id="p-paper">5 · Khổ giấy</h2>
+        <div class="chips" id="paper-size" role="group" aria-labelledby="p-paper">
+          <button class="chip" type="button" data-paper="a4" aria-pressed="true">A4 dọc · 4 thẻ</button>
+          <button class="chip" type="button" data-paper="a5" aria-pressed="false">A5 ngang · 2 thẻ</button>
+        </div>
+        <p class="panel__hint" id="paper-hint"></p>
+      </section>
+
+      <!-- ── 6. Bù mực giấy kraft ───────────────────────── -->
       <section class="panel" aria-labelledby="p-ink">
         <div class="panel__head">
-          <h2 class="panel__title" id="p-ink">5 · Bù mực cho giấy kraft</h2>
+          <h2 class="panel__title" id="p-ink">6 · Bù mực cho giấy kraft</h2>
           <label class="toggle">
             <input type="checkbox" id="kraft-ink">
             <span>Bật</span>

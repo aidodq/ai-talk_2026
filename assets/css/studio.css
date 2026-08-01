@@ -47,6 +47,11 @@
   --tag-rows:   514;
   --tag-width:  84mm;
   --u-print:    calc(var(--tag-width) / var(--tag-cols));
+
+  /* Half of A4's 297mm height — the line the sheet is cut along to get
+     two A5 pieces that can each go back through the printer. */
+  --a5-half:     148.5mm;
+  --page-margin: 10mm;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -207,6 +212,11 @@ code{
 }
 
 #kraft-ink-controls { display: flex; flex-direction: column; gap: 20px; }
+
+/* The A5 cut guide printed across the middle of an A4 sheet. Absolute so
+   it never takes a grid cell. */
+.sheet { position: relative; }
+.sheet__cut { position: absolute; }
 
 .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 560px){ .field-grid { grid-template-columns: 1fr; } }
@@ -506,20 +516,47 @@ code{
 
   .print-only { display: block; }
 
-  /* 84 x 124.07mm tags, 2 x 2 to a sheet: 178 x 256.1mm inside A4's
-     190 x 277mm printable area. Rows are derived from --u rather than
-     hard-coded, so they can never drift from the tag's real height and
-     spill a spurious blank page. */
+  /* Each row of tags is centred inside its own A5 half of the A4, rather
+     than simply stacked from the top margin. That way a cut straight
+     across the middle of the page yields two intact A5 sheets, each of
+     which can be fed back through the printer for the next two guests —
+     so nobody waits for four names to accumulate.
+
+       row inset from the A5 edge = (148.5 - 124.07) / 2 = 12.215mm
+       gap between rows           =  148.5 - 124.07      = 24.43mm
+       sheet height               =  274.79mm  (A4 printable: 277mm)
+
+     The same inset is reused when the paper IS an A5 half, so a tag lands
+     in exactly the same spot whichever way it was printed. */
   .sheet{
     --u: var(--u-print);
+    --tag-h: calc(var(--u) * var(--tag-rows));
+    --row-inset: calc((var(--a5-half) - var(--tag-h)) / 2);
+
     display: grid;
     grid-template-columns: repeat(2, calc(var(--u) * var(--tag-cols)));
-    grid-auto-rows: calc(var(--u) * var(--tag-rows));
-    gap: 8mm 10mm;
+    grid-auto-rows: var(--tag-h);
+    column-gap: 10mm;
+    row-gap: calc(var(--a5-half) - var(--tag-h));
+    padding-top: calc(var(--row-inset) - var(--page-margin));
     width: max-content;
+    margin: 0 auto;
     break-inside: avoid;
   }
   .sheet + .sheet { break-before: page; }
+
+  .sheet__cut{
+    left: -6mm; right: -6mm;
+    top: calc(var(--a5-half) - var(--page-margin));
+    border-top: 1px dashed rgba(27, 44, 56, .55);
+    text-align: center;
+  }
+  .sheet__cut span{
+    position: relative; top: -2.2mm;
+    background: #fff; padding: 0 2mm;
+    font-size: 7pt; letter-spacing: .14em;
+    color: rgba(27, 44, 56, .6);
+  }
 
   .sheet .tag{
     box-shadow: none;
