@@ -53,12 +53,6 @@
   --a5-half:     148.5mm;
   --page-margin: 10mm;
 
-  /* ISO A5 portrait, i.e. what every printer driver calls "A5". The cut
-     piece is really 148.5mm across (half of 297), so it runs 0.5mm wider
-     than the page the driver sets up — half a millimetre of centring
-     error, far below the feed tolerance of any tray. */
-  --a5-w: 148mm;
-  --a5-h: 210mm;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -551,32 +545,6 @@ code{
     break-inside: avoid;
   }
   .sheet + .sheet { break-before: page; }
-
-  /* ── In lên nửa tờ đã cắt, nạp dọc như A4 ────────────────
-     The cut piece is 210 x 148.5mm, but it goes into the tray the same
-     way A4 does — short edge across — so the driver is handed a plain
-     A5 portrait page and the artwork is turned a quarter turn to match
-     the paper's new orientation.
-
-     The sheet keeps its landscape layout box (190 x 128mm, the A5
-     printable area lying down). Rotating that about its centre gives a
-     128 x 190mm footprint — exactly the portrait printable area — so
-     registration stays exact. The negative/positive margins re-seat the
-     box, since a transform does not change the space it reserves:
-       shift = (190 - 128) / 2 = 31mm
-     ──────────────────────────────────────────────────────── */
-  .sheet--rot{
-    --rot-shift: calc((var(--a5-h) - var(--a5-w)) / 2);
-
-    box-sizing: border-box;
-    width:  calc(var(--a5-h) - 2 * var(--page-margin));
-    height: calc(var(--a5-w) - 2 * var(--page-margin));
-    justify-content: center;   /* centre the tag pair across the width */
-    align-content: start;
-    margin: var(--rot-shift) calc(-1 * var(--rot-shift));
-    transform: rotate(90deg);
-    transform-origin: 50% 50%;
-  }
 
   .sheet__cut{
     left: -6mm; right: -6mm;

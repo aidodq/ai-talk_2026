@@ -20,11 +20,10 @@
     },
     a5: {
       perPage: 2,
-      rotate: true,
-      css: '@page { size: A5 portrait; margin: 10mm; }',
-      hint: '2 thẻ mỗi tờ — dùng cho nửa tờ A4 đã cắt. Nạp nửa giấy vào khay theo chiều dọc y như giấy A4, ' +
-            'trong hộp thoại in chọn khổ A5. Nội dung đã được xoay sẵn 90° cho khớp. ' +
-            'Nếu in ra bị ngược đầu thì xoay tờ giấy 180° rồi in lại.'
+      css: '@page { size: A5 landscape; margin: 10mm; }',
+      hint: '2 thẻ mỗi tờ — dùng cho nửa tờ A4 đã cắt. Bỏ thẳng nửa giấy vào khay đúng như lúc lấy ra, ' +
+            'không phải chỉnh thanh chặn: cạnh 210mm vẫn nằm ngang y như A4. ' +
+            'Trong hộp thoại in chọn khổ A5 và hướng Landscape / Ngang.'
     }
   };
 
@@ -182,11 +181,8 @@
      the guest list entirely and lays down blank stock; the other two modes
      chunk the guests four to a sheet and differ only by the mode class. */
   function buildPrintArea() {
-    var paper = PAPERS[state.paperSize];
-    var cls = 'sheet sheet--' + state.mode +
-      (state.kraftInk ? ' is-kraft-ink' : '') +
-      (paper.rotate ? ' sheet--rot' : '');
-    var per = paper.perPage;
+    var cls = 'sheet sheet--' + state.mode + (state.kraftInk ? ' is-kraft-ink' : '');
+    var per = perPage();
     /* Only the full A4 gets a cut guide; an A5 half is already cut. */
     var cut = state.paperSize === 'a4'
       ? '<div class="sheet__cut" aria-hidden="true"><span>&#9986; CẮT ĐÔI THÀNH 2 TỜ A5</span></div>'
