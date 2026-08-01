@@ -407,13 +407,17 @@ code{
   position: relative;
   display: flex; align-items: center; gap: calc(var(--u) * 10);
 }
+/* 72u = 19.2mm printed. The event QR is a version-8 symbol (49 x 49
+   modules), so at the 59u the design originally called for each module
+   would land at 0.289mm — under what a phone camera reliably reads, and
+   well under what toner holds on kraft. 72u lifts it to 0.36mm. */
 .tag__qr-slot{
   position: relative;
-  width: calc(var(--u) * 59); height: calc(var(--u) * 59);
+  width: calc(var(--u) * 72); height: calc(var(--u) * 72);
   background: #fff; border-radius: calc(var(--u) * 5);
   display: flex; align-items: center; justify-content: center;
 }
-/* Shows through only while assets/img/qr-fanpage.png is absent. */
+/* Shows through only while assets/img/qr-event.png is absent. */
 .tag__qr-slot span{
   font-size: calc(var(--u) * 13); font-weight: 700; letter-spacing: .1em;
   color: rgba(27, 44, 56, .35);

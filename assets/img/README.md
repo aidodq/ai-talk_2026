@@ -25,21 +25,26 @@ tới `https://q.me-qr.com/uh4dqj80` → Google Form đăng ký.
 `speaker-aido.jpg` đã cắt bỏ dải chữ viết tay "AIDo" ở đáy tranh cho vừa khung
 4:5 — tên diễn giả đã hiển thị bằng chữ lớn ngay bên cạnh nên không cần lặp.
 
-## Còn thiếu: `qr-fanpage.png`
+## QR trên thẻ tên
 
-Hai trang công cụ (`checkin.html`, `nametag.html`) dựng thẻ tên có ô QR Fanpage
-Duyên Quơ, trỏ tới `assets/img/qr-fanpage.png`. **File này chưa có.** Nguồn là
-`uploads/QR_DuyenQuo.png` trong project Design, nhưng `get_file` trả về base64
-hỏng (IDAT sai CRC, không giải nén được) — xem cách tải bằng endpoint `serve` ở
-mục dưới:
+| File | Dùng ở đâu | Kích thước | Version | Module |
+| ---- | ---------- | ---------- | ------- | ------ |
+| `qr-event.png`   | ô QR trên thẻ tên (`checkin.html`, `nametag.html`) | 555 × 555 | 8 | 49 × 49 |
+| `qr-form.png`    | phần Đăng ký của `index.html`                      | 440 × 440 | — | — |
+| `qr-fanpage.png` | **không còn dùng** — QR Fanpage cũ, giữ lại phòng khi cần | 153 × 153 | 4 | 36 × 36 |
 
-```bash
-curl -o assets/img/qr-fanpage.png "$B/QR_DuyenQuo.png?t=<token>"
-```
+Ô QR trên thẻ rộng 72 đơn vị lưới = 19,2 mm khi in. Con số này bám theo số
+module của `qr-event.png`: 49 module trong vùng mã 17,6 mm → **0,36 mm mỗi
+module**. Ở 59 đơn vị như thiết kế gốc thì chỉ còn 0,289 mm — dưới ngưỡng máy
+ảnh điện thoại đọc ổn định, và mực laser trên giấy kraft sẽ nhoè dính các
+module vào nhau.
 
-Chừng nào chưa có file, thẻ vẫn in bình thường: ô QR hiện khung nét đứt chữ "QR"
-để dán mã bằng tay. Thả đúng file vào là cả hai trang tự hiện QR, không cần sửa
-code.
+**Nếu đổi QR khác thì phải kiểm lại con số này.** QR càng nhiều dữ liệu thì
+version càng cao, module càng nhỏ. Đếm module rồi tính:
+`(72 × 0,267241 mm − 1,6 mm padding) ÷ số module ≥ 0,35 mm`.
+
+Thiếu file thì thẻ vẫn in được: ô QR hiện khung nét đứt chữ "QR" để dán mã bằng
+tay. Thả đúng file vào là cả hai trang tự hiện, không cần sửa code.
 
 ## Tải lại ảnh gốc từ project Design
 

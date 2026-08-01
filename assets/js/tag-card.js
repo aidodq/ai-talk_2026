@@ -25,7 +25,7 @@
   var SKILLS = ['AI', 'Backend', 'Frontend', 'Mobile', 'Data', 'Design'];
   var SKILL_SEP = ' | ';
 
-  var QR_SRC = 'assets/img/qr-fanpage.png';
+  var QR_SRC = 'assets/img/qr-event.png';
 
   function esc(value) {
     return String(value == null ? '' : value)
@@ -144,9 +144,9 @@
              instead of a broken-image icon, so the tag stays printable and
              the code can be stuck on by hand. */
           '<div class="tag__qr-slot"><span>QR</span>' +
-            '<img src="' + QR_SRC + '" alt="Mã QR Fanpage Duyên Quơ" onerror="this.remove()">' +
+            '<img src="' + QR_SRC + '" alt="Mã QR Event page Duyên Quơ" onerror="this.remove()">' +
           '</div>' +
-          '<div class="tag__qr-label">Fanpage<br>Duyên Quơ</div>' +
+          '<div class="tag__qr-label">Event page<br>Duyên Quơ</div>' +
         '</div>' +
       '</div>';
   }
