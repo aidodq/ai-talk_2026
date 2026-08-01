@@ -9,29 +9,30 @@
   var DEFAULTS = { zoom: 430, posX: 63, posY: 20 };
   var SHEET_MAX = 20;
 
-  /* @page size cannot be toggled by a class, so it is swapped by rewriting
-     a dedicated style element whenever the paper changes. */
-  var PAPERS = {
-    a4: {
-      perPage: 4,
-      css: '@page { size: A4 portrait; margin: 10mm; }',
-      hint: '4 thẻ mỗi tờ. Giữa tờ có đường cắt chấm: in 2 thẻ hàng trên rồi cắt đôi là phát được ngay ' +
-            'cho khách, nửa dưới còn nguyên để dành. Khi có thêm khách thì chuyển sang khổ A5 và in lên nửa đó.'
+  /* Which half of the A4 receives the tags. The paper stays a whole A4
+     throughout — it is fed back in uncut for the second pass and only cut
+     up at the very end — so the printer never has to handle an odd sheet.
+     `lead` is how many grid cells to leave empty first, which is what
+     pushes the tags down into the second row. */
+  var HALVES = {
+    both: {
+      perPage: 4, lead: 0,
+      hint: 'Điền cả 4 ô của tờ A4.'
     },
-    a5: {
-      perPage: 2,
-      css: '@page { size: A5 landscape; margin: 10mm; }',
-      hint: '2 thẻ mỗi tờ — dùng cho nửa tờ A4 đã cắt. Bỏ thẳng nửa giấy vào khay đúng như lúc lấy ra, ' +
-            'không phải chỉnh thanh chặn: cạnh 210mm vẫn nằm ngang y như A4. ' +
-            'Trong hộp thoại in chọn khổ A5 và hướng Landscape / Ngang.'
+    top: {
+      perPage: 2, lead: 0,
+      hint: 'In 2 thẻ vào nửa trên, chừa trống nửa dưới. Đừng cắt vội — giữ nguyên tờ A4, khi có thêm ' +
+            'khách thì chọn “Nửa dưới” và cho chính tờ giấy đó chạy lại. Cắt hết một lượt ở cuối.'
+    },
+    bottom: {
+      perPage: 2, lead: 2,
+      hint: 'In 2 thẻ vào nửa dưới của tờ giấy đã in nửa trên. Nạp lại đúng tờ A4 đó vào khay, ' +
+            'cùng chiều như lần đầu. Thẻ rơi đúng vị trí như khi in cả 4 thẻ một lượt.'
     }
   };
 
-  var pageStyle = document.createElement('style');
-  document.head.appendChild(pageStyle);
-
   function perPage() {
-    return PAPERS[state.paperSize].perPage;
+    return HALVES[state.half].perPage;
   }
 
   var MODES = {
@@ -103,7 +104,7 @@
        press imports only the newly-saved ones instead of duplicating. */
     imported: 0,
     mode: 'full',
-    paperSize: 'a4',
+    half: 'both',
     templateSheets: 5,
     kraftInk: false,
     paper: '#C4A484',
@@ -118,7 +119,7 @@
    'sheet-count', 'sheet-hint', 'sheet-list', 'clear-sheet',
    'import-guests', 'print-sheet', 'print-area', 'preview',
    'print-mode', 'mode-hint', 'template-qty', 'template-qty-field',
-   'paper-size', 'paper-hint', 'per-page',
+   'sheet-half', 'half-hint', 'per-page',
    'kraft-ink', 'kraft-ink-controls', 'paper-colour', 'photo-treat', 'treat-hint',
    'photo-contrast', 'photo-contrast-label'
   ].forEach(function (id) {
@@ -183,10 +184,9 @@
   function buildPrintArea() {
     var cls = 'sheet sheet--' + state.mode + (state.kraftInk ? ' is-kraft-ink' : '');
     var per = perPage();
-    /* Only the full A4 gets a cut guide; an A5 half is already cut. */
-    var cut = state.paperSize === 'a4'
-      ? '<div class="sheet__cut" aria-hidden="true"><span>&#9986; CẮT ĐÔI THÀNH 2 TỜ A5</span></div>'
-      : '';
+    var cut = '<div class="sheet__cut" aria-hidden="true"><span>&#9986; ĐƯỜNG CẮT ĐÔI TỜ A4</span></div>';
+    /* Empty grid cells that shove the tags down into the second row. */
+    var lead = new Array(HALVES[state.half].lead + 1).join('<div class="tag-blank"></div>');
     var html = '';
 
     /* Ink compensation must reach the printer, so it rides on the print
@@ -197,11 +197,11 @@
       var blanks = '';
       for (var b = 0; b < per; b++) blanks += NT.tagHTML({});
       for (var s = 0; s < state.templateSheets; s++) {
-        html += '<div class="' + cls + '">' + cut + blanks + '</div>';
+        html += '<div class="' + cls + '">' + cut + lead + blanks + '</div>';
       }
     } else {
       for (var start = 0; start < state.sheet.length; start += per) {
-        html += '<div class="' + cls + '">' + cut +
+        html += '<div class="' + cls + '">' + cut + lead +
           state.sheet.slice(start, start + per).map(NT.tagHTML).join('') +
           '</div>';
       }
@@ -222,8 +222,7 @@
     el['clear-sheet'].hidden = count === 0;
 
     el['sheet-hint'].textContent = count
-      ? 'Xuất ' + pages + ' tờ ' + (state.paperSize === 'a4' ? 'A4' : 'A5') +
-        ' — mỗi tờ ' + perPage() + ' thẻ, cắt theo viền chấm.'
+      ? 'Xuất ' + pages + ' tờ A4 — mỗi tờ ' + perPage() + ' thẻ, cắt theo viền chấm.'
       : 'Chưa có thẻ nào. Nhập thông tin rồi bấm “Thêm vào tờ in”.';
 
     el['sheet-list'].innerHTML = state.sheet.map(function (item, index) {
@@ -264,20 +263,19 @@
     renderPreview();
   }
 
-  function renderPaper() {
-    pageStyle.textContent = PAPERS[state.paperSize].css;
-    el['paper-hint'].textContent = PAPERS[state.paperSize].hint;
+  function renderHalf() {
+    el['half-hint'].textContent = HALVES[state.half].hint;
     el['per-page'].textContent = perPage();
-    [].forEach.call(el['paper-size'].querySelectorAll('[data-paper]'), function (button) {
-      button.setAttribute('aria-pressed', String(button.dataset.paper === state.paperSize));
+    [].forEach.call(el['sheet-half'].querySelectorAll('[data-half]'), function (button) {
+      button.setAttribute('aria-pressed', String(button.dataset.half === state.half));
     });
   }
 
-  el['paper-size'].addEventListener('click', function (event) {
-    var button = event.target.closest('[data-paper]');
-    if (!button || !PAPERS[button.dataset.paper]) return;
-    state.paperSize = button.dataset.paper;
-    renderPaper();
+  el['sheet-half'].addEventListener('click', function (event) {
+    var button = event.target.closest('[data-half]');
+    if (!button || !HALVES[button.dataset.half]) return;
+    state.half = button.dataset.half;
+    renderHalf();
     renderSheet();
   });
 
@@ -482,7 +480,7 @@
 
   renderChips();
   renderPhotoUI();
-  renderPaper();
+  renderHalf();
   renderMode();
   renderKraftInk();
   renderPreview();

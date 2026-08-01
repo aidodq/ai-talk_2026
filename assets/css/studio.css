@@ -48,8 +48,7 @@
   --tag-width:  84mm;
   --u-print:    calc(var(--tag-width) / var(--tag-cols));
 
-  /* Half of A4's 297mm height — the line the sheet is cut along to get
-     two A5 pieces that can each go back through the printer. */
+  /* Half of A4's 297mm height — where the finished sheet gets cut in two. */
   --a5-half:     148.5mm;
   --page-margin: 10mm;
 
@@ -214,8 +213,9 @@ code{
 
 #kraft-ink-controls { display: flex; flex-direction: column; gap: 20px; }
 
-/* The A5 cut guide printed across the middle of an A4 sheet. Absolute so
-   it never takes a grid cell. */
+/* The cut guide across the middle of the A4. Absolute so it never takes a
+   grid cell, and so it still lands at the halfway mark when only the top
+   row of tags is being printed and the sheet box is half height. */
 .sheet { position: relative; }
 .sheet__cut { position: absolute; }
 
@@ -517,18 +517,18 @@ code{
 
   .print-only { display: block; }
 
-  /* Each row of tags is centred inside its own A5 half of the A4, rather
-     than simply stacked from the top margin. That way a cut straight
-     across the middle of the page yields two intact A5 sheets, each of
-     which can be fed back through the printer for the next two guests —
-     so nobody waits for four names to accumulate.
+  /* Each row of tags is centred inside its own half of the A4 rather than
+     stacked from the top margin, so a cut straight across the middle
+     leaves two tidy A5 pieces with the tags well clear of the edge.
 
-       row inset from the A5 edge = (148.5 - 124.07) / 2 = 12.215mm
-       gap between rows           =  148.5 - 124.07      = 24.43mm
-       sheet height               =  274.79mm  (A4 printable: 277mm)
+       row inset from the half's edge = (148.5 - 124.07) / 2 = 12.215mm
+       gap between rows               =  148.5 - 124.07      = 24.43mm
+       sheet height                   =  274.79mm  (A4 printable: 277mm)
 
-     The same inset is reused when the paper IS an A5 half, so a tag lands
-     in exactly the same spot whichever way it was printed. */
+     Rows sit at fixed offsets, which is what lets the two halves be
+     printed in separate passes: the sheet goes back into the tray whole
+     and uncut, and a tag printed on the second pass lands exactly where
+     it would have if all four had gone down at once. */
   .sheet{
     --u: var(--u-print);
     --tag-h: calc(var(--u) * var(--tag-rows));
