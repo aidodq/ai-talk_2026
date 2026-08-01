@@ -38,20 +38,29 @@
   --radius:       14px;
 
   /* ── Kích thước thẻ tên ──────────────────────────────────
-     The tag is drawn on a 348 x 514 unit grid. Set the printed width here
-     and everything else follows: the height, the print sheet, the preview,
-     and every inner dimension (they are all multiples of --u).
-       84mm / 348 units  ->  514 units = 124.07mm tall
+     The tag is drawn on a --tag-cols x --tag-rows unit grid; every inner
+     dimension is a multiple of --u, so these values drive the printed card,
+     the sheet layout and the preview alike.
+
+       93mm / 348 cols          = 0.267241mm per unit
+       497.677 rows x 0.267241  = 133mm tall
+
+     --tag-rows is what fixes the aspect ratio: cols x height / width,
+     i.e. 348 x 133 / 93. Recompute it if the proportions change.
      ──────────────────────────────────────────────────────── */
   --tag-cols:   348;
-  --tag-rows:   514;
-  --tag-width:  84mm;
+  --tag-rows:   497.677;
+  --tag-width:  93mm;
   --u-print:    calc(var(--tag-width) / var(--tag-cols));
 
   /* Half of A4's 297mm height — where the finished sheet gets cut in two. */
   --a5-half:     148.5mm;
-  --page-margin: 10mm;
 
+  /* 93mm cards leave much less room than 84mm ones: two across plus a 10mm
+     gutter is 196mm of A4's 210mm, and the two rows span 7.75mm to 289.25mm
+     down the page. A 6mm margin clears both, and still stays outside the
+     ~5mm strip most laser printers cannot reach. */
+  --page-margin: 6mm;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -506,7 +515,7 @@ code{
 
 /* ── Print: A4 portrait, 4 tags per sheet ───────────────── */
 
-@page { size: A4 portrait; margin: 10mm; }
+@page { size: A4 portrait; margin: 6mm; }
 
 .print-only { display: none; }
 
@@ -521,9 +530,9 @@ code{
      stacked from the top margin, so a cut straight across the middle
      leaves two tidy A5 pieces with the tags well clear of the edge.
 
-       row inset from the half's edge = (148.5 - 124.07) / 2 = 12.215mm
-       gap between rows               =  148.5 - 124.07      = 24.43mm
-       sheet height                   =  274.79mm  (A4 printable: 277mm)
+       row inset from the half's edge = (148.5 - 133) / 2 = 7.75mm
+       gap between rows               =  148.5 - 133      = 15.5mm
+       sheet height                   =  283.25mm  (A4 printable: 285mm)
 
      Rows sit at fixed offsets, which is what lets the two halves be
      printed in separate passes: the sheet goes back into the tray whole
@@ -546,8 +555,10 @@ code{
   }
   .sheet + .sheet { break-before: page; }
 
+  /* Spans the sheet exactly rather than bleeding past it — at a 6mm page
+     margin, overhang would land in the printer's unprintable strip. */
   .sheet__cut{
-    left: -6mm; right: -6mm;
+    left: 0; right: 0;
     top: calc(var(--a5-half) - var(--page-margin));
     border-top: 1px dashed rgba(27, 44, 56, .55);
     text-align: center;

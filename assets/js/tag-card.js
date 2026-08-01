@@ -3,7 +3,7 @@
 
    Three things live here because both tools need them:
      1. Photo intake  — read a File, downscale it, hand back a data URL.
-     2. Tag markup    — the 84 x 124 mm name tag, built once.
+     2. Tag markup    — the 93 x 133 mm name tag, built once.
      3. Guest store   — localStorage bridge from the upload page to
                         the print page (no backend on this site).
    ============================================================ */
